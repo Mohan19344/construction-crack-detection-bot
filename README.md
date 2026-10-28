@@ -1,63 +1,97 @@
-# construction-crack-detection-bot
-A system for detecting construction cracks using computer vision and embedded systems.
 # Construction Crack Detection Bot
 
-## 📌 Project Overview
+A starter computer-vision project for detecting visible cracks in concrete images. This repository begins with a PC-based AI model workflow and can later be integrated with an ESP32-CAM robot.
 
-The Construction Crack Detection Bot is a robotics project designed to assist in inspecting construction surfaces and identifying visible cracks.
+> **Current status:** Starter code only. The model must be trained with a suitable dataset and tested before claiming reliable crack detection. This is not a structural-safety inspection tool.
 
-The project aims to reduce the need for manual inspection in difficult-to-access areas by combining a mobile robotic platform with a crack detection system.
+## Project plan
 
-## 🎯 Objectives
+1. Collect and label concrete images as `crack` or `no_crack`.
+2. Train a small TensorFlow/Keras image classifier on a computer.
+3. Run predictions on test images.
+4. Later, capture images using the ESP32-CAM and send them to the computer for inference.
+5. Explore edge deployment only after choosing hardware and measuring model size/performance.
 
-- Detect visible cracks on construction surfaces.
-- Explore automated inspection using robotics and computer vision.
-- Reduce the effort involved in manual surface inspection.
-- Provide a foundation for future autonomous inspection systems.
+## Requirements
 
-## ⚙️ Key Features
+- Python 3.10 or 3.11 recommended
+- A computer with internet access for installing packages and obtaining a dataset
+- Labeled images for both classes
+- Optional: ESP32-CAM for image capture
 
-- Mobile robotic platform for surface inspection.
-- Camera-based image acquisition.
-- Crack detection using image processing or computer vision.
-- Potential for real-time inspection and reporting.
+## Setup
 
-*Features listed above should be updated to reflect the functions actually implemented in the project.*
+```bash
+python -m venv .venv
+# Windows:
+.venv\Scripts\activate
+# Ubuntu/Linux:
+source .venv/bin/activate
 
-## 🛠️ Technologies Used
+pip install -r requirements.txt
+```
 
-Update this section with the technologies used in your implementation.
+## Prepare your dataset
 
-- **Controller:** ESP32 / Raspberry Pi / other controller
-- **Camera:** ESP32-CAM / other camera
-- **Programming:** Python / C++
-- **Computer Vision:** OpenCV / other detection method
-- **Robot Control:** Motor driver and DC motors, if applicable
+Create this structure and put real images in the matching folders:
 
-## 🔄 Working Principle
+```text
+dataset/
+  train/
+    crack/
+    no_crack/
+  validation/
+    crack/
+    no_crack/
+```
 
-1. The camera captures images of the construction surface.
-2. The captured images are processed by the detection system.
-3. The system identifies potential cracks using the implemented detection method.
-4. The results are presented to the operator or used by the robot, depending on the implementation.
+Use a dataset you are allowed to use. Keep training and validation images separate; avoid placing near-duplicate images in both folders. Aim for a balanced set of examples from varied lighting, distances, concrete textures, and crack widths.
 
-## 📸 Project Demonstration
+## Train
 
-Add photographs of the robot, hardware setup, and detection results here.
+```bash
+python src/train.py --data dataset --output models/crack_classifier.keras
+```
 
-## 🔮 Future Improvements
+The script saves a trained model and reports validation accuracy. Accuracy alone does not prove that the model is reliable; inspect false positives and false negatives on unseen images.
 
-- Improve crack detection accuracy.
-- Add autonomous navigation.
-- Store inspection results for later analysis.
-- Generate inspection reports.
-- Explore mapping and localization for larger inspection areas.
+## Predict on an image
 
-## 👨‍💻 Project Information
+```bash
+python src/predict.py --model models/crack_classifier.keras --image path/to/test_image.jpg
+```
 
-**Project:** Construction Crack Detection Bot  
-**Domain:** Mechatronics, Robotics and Computer Vision
+## ESP32-CAM integration (next phase)
 
----
+The ESP32-CAM can capture or stream images, but this starter model runs on a computer. The initial integration plan is:
+1. ESP32-CAM captures an image.
+2. The image is sent to a laptop/Raspberry Pi over Wi-Fi.
+3. The Python model predicts `crack` or `no_crack`.
+4. The result is logged or displayed.
 
-*This repository documents the project's actual implementation, experiments, and future development.*
+Do not assume the TensorFlow model can run directly on an ESP32-CAM. Direct deployment requires a compatible, quantized TinyML model and careful memory/performance testing.
+
+## Repository structure
+
+```text
+construction-crack-detection-bot/
+├── README.md
+├── requirements.txt
+├── .gitignore
+├── dataset/
+│   └── README.md
+├── models/
+│   └── README.md
+├── images/
+│   └── README.md
+└── src/
+    ├── train.py
+    └── predict.py
+```
+
+## Limitations
+
+- This starter does not include a trained model or dataset.
+- A classifier labels the whole image; it does not draw precise crack boundaries.
+- Results depend on dataset quality and image conditions.
+- This project is for learning and prototype development, not professional structural assessment.
